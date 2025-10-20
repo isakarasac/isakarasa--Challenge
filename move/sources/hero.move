@@ -1,6 +1,7 @@
 module challenge::hero;
-
 use std::string::String;
+use sui::tx_context::{Self, TxContext};
+
 
 // ========= STRUCTS =========
 public struct Hero has key, store {
@@ -19,7 +20,19 @@ public struct HeroMetadata has key, store {
 
 #[allow(lint(self_transfer))]
 public fun create_hero(name: String, image_url: String, power: u64, ctx: &mut TxContext) {
-    
+    let hero = Hero {
+        id: object::new(ctx),
+        name,
+        image_url,
+        power,
+    };
+    transfer::public_transfer(hero, ctx.sender());
+    let metadata = HeroMetadata {
+        id: object::new(ctx),
+        timestamp: tx_context::epoch_timestamp_ms(ctx),
+    };
+     transfer::freeze_object(metadata);
+
     // TODO: Create a new Hero struct with the given parameters
         // Hints:
         // Use object::new(ctx) to create a unique ID
@@ -51,4 +64,3 @@ public fun hero_image_url(hero: &Hero): String {
 public fun hero_id(hero: &Hero): ID {
     object::id(hero)
 }
-
